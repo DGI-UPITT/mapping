@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * @file
+ * Prototype module for populating solr results to a google map.
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function mapping_help($path, $arg) {
+  switch ($path) {
+
+    case 'admin/help#mapping':
+      $output = '';
+      $output .= '<p>' . t('Prototype module for populating solr results to a google map.') . '</p>';
+      return $output;
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function mapping_menu() {
+  $items = array();
+  $items['mapping'] = array(
+    'title' => 'Mapping',
+    'description' => 'Mapping prototype.',
+    'page callback' => '_mapping_page',
+//    'page arguments' => array(),
+    'access arguments' => array('access content'),
+//    'type' => MENU_LOCAL_TASK,
+  );
+  return $items;
+}
+
+
+/**
+ * Include _mapping_page()
+ */
+function _mapping_page() {
+
+  $output = '';
+
+  $output .= theme('mapping');
+
+  return $output;
+}
+
+
+/**
+ * Implementation of hook_theme().
+ */
+function mapping_theme() {
+  // set path
+  $path = drupal_get_path('module', 'mapping') . '/theme';
+  $file = 'mapping.theme.inc';
+
+  return array(
+    'mapping' => array(
+      'path' => $path,
+      'file' => $file,
+      'template' => 'mapping',
+      'arguments' => array('results' => NULL),
+    ),
+  );
+}
+

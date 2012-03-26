@@ -1,0 +1,6 @@
+name = mapping
+description = Prototype module for mapping.
+core = 6.x
+package = Custom
+version = "6.x-1.0-dev"
+core = "6.x"
