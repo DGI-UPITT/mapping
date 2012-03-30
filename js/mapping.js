@@ -4,8 +4,15 @@ Drupal.behaviors.mappingGmap = function(context) {
   initialize_map();
   
 
+
 }
 
+// set djatoka base url
+//var djatokaBaseUrl = "http://164.67.30.146:8080";  // ucla
+var djatokaBaseUrl = "http://192.168.3.12:8080";  // upitt
+
+// set djatoka default mime-type
+var mimeType = "image/png";
 
 
 // initialize google map
@@ -98,6 +105,8 @@ function initialize_map() {
 //
 //  });
 
+
+
 }
 
 
@@ -147,14 +156,14 @@ myOverlay.prototype.onAdd = function() {
   div.id = 'islandora-image-overlay';
 
   // Create an IMG element and attach it to the DIV.
-  var img = document.createElement("img");
+//  var img = document.createElement("img");
 //  img.src = this.image_;
   
-  img.style.width = "100%";
-  img.style.height = "100%";
+//  img.style.width = "100%";
+//  img.style.height = "100%";
   //div.appendChild(img);
 
-  this.img_ = img;
+//  this.img_ = img;
 
   // Set the overlay's div_ property to this DIV
   this.div_ = div;
@@ -162,7 +171,7 @@ myOverlay.prototype.onAdd = function() {
   // We add an overlay to a map via one of the map's panes.
   // We'll add this overlay to the overlayImage pane.
   // https://developers.google.com/maps/documentation/javascript/reference#MapPanes
-  console.log(this.getPanes());
+  
   var panes = this.getPanes();
   panes.overlayLayer.appendChild(div);
 }
@@ -202,37 +211,80 @@ myOverlay.prototype.draw = function() {
   // tile size
   var tileSize = 256;
   
-  
+  // amount of full horizontal tiles
   var xAmount = (imgWidth / tileSize);
+  // leftover pixels for right tiles
   var xRemain = (imgWidth % tileSize);
   
+  // amount of full vertical tiles
   var yAmount = (imgHeight / tileSize);
+  // leftover pixels for bottom tiles
   var yRemain = (imgHeight % tileSize);
   
   
-  console.log(xAmount);
-  console.log(xRemain);
-  console.log(yAmount);
-  console.log(yRemain);
+  // clear wrapper div
+  $('#islandora-image-overlay').html('');
+  
+  // y loop
+  var yAmountCeil = Math.ceil(yAmount);
+  for (var y = 0; y < yAmountCeil; y++) {
+    
+//    console.log('y ' + y);
+    
+    // x loop
+    var xAmountCeil = Math.ceil(xAmount);
+    for (var x = 0; x < xAmountCeil; x++) {
+    
+//      console.log('x ' + x);
+
+
+      // calculate tile top position
+      var tileTop = tileSize * y;
+      // calculate tile left position
+      var tileLeft = tileSize * x;
+      // calculate tile width
+      var tileWidth = tileSize;
+      // last tile in line gets resized
+      if ((xAmountCeil - 1) == x) {
+        tileWidth = xRemain;
+      }
+      // calculate tile height
+      var tileHeight = tileSize;
+      // last tile in line gets resized
+      if ((yAmountCeil - 1) == y) {
+        tileHeight = yRemain;
+      }
+      
+      // create new image and assign style and attributes.
+      var img = document.createElement("img");
+      // get djatoka url
+      img.fauxSrc = djatokaRegion(imgWidth, 0, tileTop, tileLeft, tileSize, tileSize);
+      img.src = djatokaRegion(imgWidth, 0, tileTop, tileLeft, tileSize, tileSize);
+      img.style.width = tileWidth + 'px';
+      img.style.height = tileHeight + 'px';
+      img.style.position = 'absolute';
+      img.style.top = tileTop + 'px';
+      img.style.left = tileLeft + 'px';
+      img.id = 'tile-' + x + '-' + y;
+      this.div_.appendChild(img);
 
 
 
+    }
+    
+}
 
+  
+  
+//  console.log(xAmount);
+//  console.log(xRemain);
+//  console.log(yAmount);
+//  console.log(yRemain);
+  
+//  console.log(Math.round(ne.x - sw.x));
 
-  
-  this.img_.src = djatokaRegion(imgWidth, 0, 0, 0, 256, 256);
-  this.img_.style.width = '256px';
-  this.img_.style.height = '256px';
-  this.div_.appendChild(this.img_);
-  
-  
-  
-  
-  
-  console.log(Math.round(ne.x - sw.x));
-
-  console.log(ne.x);
-  console.log(sw.x);
+//  console.log(ne.x);
+//  console.log(sw.x);
 
   
 }
@@ -244,22 +296,30 @@ function djatokaRegion(scaleWidth, scaleHeight, top, left, height, width) {
   // set url
   var url;
   // set original image
+//  var original = 'http://hpitt.pittsburgh/fedora/repository/hpitt%3Ahopkins_39v02p01_georefclip/JP2/39v02p01-011%20Clip1.jp2';
+//  var original = 'http://dl.dropbox.com/u/12905785/DGI/upitt/39v02p01-011_Clip1.tif';
+//  var original = 'http://dl.dropbox.com/u/12905785/DGI/upitt/39v02p01-011_Clip1.png';
   var original = 'http://164.67.30.146/drupal/fedora/repository/ucla:4618/JP2/JP2';
+//  var original = 'http://upload.wikimedia.org/wikipedia/commons/d/dc/Cats_Petunia_and_Mimosa_2004.jpg';
 
   // get scaled down version of original image
   var scaledOriginal = djatokaScale(original, scaleWidth);
-
+  
+//  console.log(scaledOriginal);
+  
   // encode scaled down image URL so we can re-use it
   var scaledOriginal = encodeURIComponent(scaledOriginal);
 
   // construct url for region
-  url = "http://164.67.30.146:8080/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id=" + 
-    scaledOriginal + 
-    "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format=image/png" + 
+  url = djatokaBaseUrl +
+    "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id=" + scaledOriginal + 
+    "&svc_id=info:lanl-repo/svc/getRegion" +
+    "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000"+
+    "&svc.format=" + mimeType + 
     "&svc.region=" + top + "," + left + "," + height + "," + width;
           
-  console.log(url);
-  console.log(scaledOriginal);
+//  console.log(url);
+//  console.log(scaledOriginal);
   
   return url;
 }
@@ -272,9 +332,11 @@ function djatokaScale(original, scaleWidth) {
   var scaledUrl;
   
   // construct url for scale
-  scaledUrl = "http://164.67.30.146:8080/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id=" + 
-    original + 
-    "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format=image/png" + 
+  scaledUrl = djatokaBaseUrl +
+    "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id=" + original +
+    "&svc_id=info:lanl-repo/svc/getRegion" +
+    "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000" +
+    "&svc.format=" + mimeType +
     "&svc.scale=" + scaleWidth;
   
   return scaledUrl;
