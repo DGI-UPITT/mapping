@@ -8,8 +8,8 @@ Drupal.behaviors.mappingGmap = function(context) {
 }
 
 // set djatoka base url
-//var djatokaBaseUrl = "http://164.67.30.146:8080";  // ucla
-var djatokaBaseUrl = "http://192.168.3.12:8080";  // upitt
+var djatokaBaseUrl = "http://164.67.30.146:8080";  // ucla
+//var djatokaBaseUrl = "http://192.168.3.12:8080";  // upitt
 
 // set djatoka default mime-type
 var mimeType = "image/png";
@@ -47,64 +47,22 @@ function initialize_map() {
   // set map
   map = new google.maps.Map(document.getElementById('map-test'), opts);
 
-  //  // adds to the marker bound
-//  var oldmap;
-//  var oldmap = new google.maps.GroundOverlay(
-//      "http://d6theming.local/sites/all/modules/custom/mapping/images/upitt-map2500.png",
-//      imageBounds
-//    );
-  
-  var srcImage = 'http://d6theming.local/sites/all/modules/custom/mapping/images/upitt-map2500.png';
+  // set original image
+//  var srcImage = 'http://hpitt.pittsburgh/fedora/repository/hpitt%3Ahopkins_39v02p01_georefclip/JP2/39v02p01-011%20Clip1.jp2';
+//  var srcImage = 'http://dl.dropbox.com/u/12905785/DGI/upitt/39v02p01-011_Clip1.tif';
+//  var srcImage = 'http://dl.dropbox.com/u/12905785/DGI/upitt/39v02p01-011_Clip1.png';
+//  var srcImage = 'http://upload.wikimedia.org/wikipedia/commons/d/dc/Cats_Petunia_and_Mimosa_2004.jpg';
+//  var srcImage = 'http://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg';
+//  var srcImage = 'http://a0.twimg.com/profile_images/111669684/druplicon.large_normal.png';
+//  var srcImage = 'http://d6theming.local/sites/all/modules/custom/mapping/images/upitt-map2500.png';
+  var srcImage = 'http://164.67.30.146/drupal/fedora/repository/ucla:4618/JP2/JP2';
   overlay = new myOverlay(imageBounds, srcImage, map);
-
-  // add image to the map
-//  oldmap.setMap(map);
-  
-  // set opacity
-//  oldmap.setOpacity(0.5);
   
   // fit the bounds we created
   map.fitBounds(imageBounds);
   
-
-  // 39v02p01-011_Clip1.tiff
-
-
-//  var test;
-//  var zoomLevel = 1;
-//
-//  google.maps.event.addListener(map, 'zoom_changed', function(event) {
-//    var i, prevZoomLevel;
-//
-//    if (map.getZoom() === 16) {
-//      oldmap.setMap();
-//      //oldmap.url = "http://hpitt.pittsburgh:8080/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id=http://hpitt.pittsburgh/fedora/repository/hpitt:PCW000203/JP2/&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format=image/png&svc.level=3&svc.rotate=0";
-//      oldmap.url = "http://164.67.30.146:8080/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id=http://164.67.30.146/drupal/fedora/repository/ucla:4618/JP2/JP2&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format=image/png&svc.level=4&svc.rotate=0";
-//      oldmap.setMap(map);
-//    }
-//    if (map.getZoom() === 17) {
-//      // unset image object from the map
-//      oldmap.setMap();
-//      // change image url
-//      oldmap.url = "http://d6theming.local/sites/all/modules/custom/mapping/images/upitt-map2500-2.png";
-//      // set image to the map again
-//      oldmap.setMap(map);
-//    }
-//    if (map.getZoom() === 18) {
-//      oldmap.setMap();
-//      oldmap.url = "http://d6theming.local/sites/all/modules/custom/mapping/images/upitt-map2500-3.png";
-//      oldmap.setMap(map);
-//    }
-//    if (map.getZoom() === 19) {
-//      oldmap.setMap();
-//      oldmap.url = "http://d6theming.local/sites/all/modules/custom/mapping/images/upitt-map2500-4.png";
-//      oldmap.setMap(map);
-//    }
-//
-//
-//
-//  });
-
+  
+  
 
 
 }
@@ -187,16 +145,17 @@ myOverlay.prototype.draw = function() {
   // Size and position the overlay. We use a southwest and northeast
   // position of the overlay to peg it to the correct position and size.
   // We need to retrieve the projection from this overlay to do this.
-  // https://developers.google.com/maps/documentation/javascript/reference#MapCanvasProjection
+  // https://developers.google.com/maps/documentation/javascript/reference#Projection
   var overlayProjection = this.getProjection();
 
   // Retrieve the southwest and northeast coordinates of this overlay
   // in latlngs and convert them to pixels coordinates.
   // We'll use these coordinates to resize the DIV.
+  // https://developers.google.com/maps/documentation/javascript/reference#MapCanvasProjection
   var sw = overlayProjection.fromLatLngToDivPixel(this.bounds_.getSouthWest());
   var ne = overlayProjection.fromLatLngToDivPixel(this.bounds_.getNorthEast());
 
-  // Resize the image's DIV to fit the indicated dimensions.
+  // Resize the image's wrapper DIV to fit the indicated dimensions.
   var div = this.div_;
   div.style.left = sw.x + 'px';
   div.style.top = ne.y + 'px';
@@ -208,7 +167,7 @@ myOverlay.prototype.draw = function() {
   // image height
   var imgHeight = Math.round(sw.y - ne.y);
   
-  // tile size
+  // set tile size
   var tileSize = 256;
   
   // amount of full horizontal tiles
@@ -221,27 +180,37 @@ myOverlay.prototype.draw = function() {
   // leftover pixels for bottom tiles
   var yRemain = (imgHeight % tileSize);
   
+  // get viewport bounds
+  var viewPortBounds = this.map_.getBounds(); 
+  var vpNE = overlayProjection.fromLatLngToDivPixel(viewPortBounds.getNorthEast());
+  var vpSW = overlayProjection.fromLatLngToDivPixel(viewPortBounds.getSouthWest());
+  
+  // get image
+  var image = this.image_;
+  
+//  console.log(sw);
+//  console.log(vpSW);
   
   // clear wrapper div
   $('#islandora-image-overlay').html('');
   
+  // render tiles
   // y loop
   var yAmountCeil = Math.ceil(yAmount);
   for (var y = 0; y < yAmountCeil; y++) {
     
-//    console.log('y ' + y);
-    
     // x loop
     var xAmountCeil = Math.ceil(xAmount);
     for (var x = 0; x < xAmountCeil; x++) {
-    
-//      console.log('x ' + x);
-
-
+  
       // calculate tile top position
       var tileTop = tileSize * y;
       // calculate tile left position
       var tileLeft = tileSize * x;
+      // calculate top position of the tile's bottom side
+      var tileBottom = tileTop + tileSize;
+      // calculate left position of the tile's right side
+      var tileRight = tileLeft + tileSize;
       // calculate tile width
       var tileWidth = tileSize;
       // last tile in line gets resized
@@ -255,57 +224,101 @@ myOverlay.prototype.draw = function() {
         tileHeight = yRemain;
       }
       
+      // global variables are tile borders relative to
+      // global left px
+      var globalLeft = sw.x + tileLeft;
+      // global top px
+      var globalTop = ne.y + tileTop;
+      // global right px
+      var globalRight = globalLeft + tileSize;
+      // global bottom px
+      var globalBottom = globalTop + tileSize;
+     
+      
       // create new image and assign style and attributes.
       var img = document.createElement("img");
       // get djatoka url
-      img.fauxSrc = djatokaRegion(imgWidth, 0, tileTop, tileLeft, tileSize, tileSize);
-      img.src = djatokaRegion(imgWidth, 0, tileTop, tileLeft, tileSize, tileSize);
+      img.title = djatokaRegion(image, imgWidth, 0, tileTop, tileLeft, tileSize, tileSize);
+      
+      img.className = 'img-not-loaded';
+      img.style.background = 'green';
+      if ((globalLeft > vpSW.x || globalRight > vpSW.x) && // don't include left
+          (globalLeft < vpNE.x || globalRight < vpNE.x) && // don't include right
+          (globalTop < vpSW.y || globalBottom < vpSW.y) && // don't include bottom
+          (globalTop > vpNE.y || globalBottom > vpNE.y) // don't include top
+         ) {
+        //img.style.background = 'blue';
+        img.src = djatokaRegion(image, imgWidth, 0, tileTop, tileLeft, tileSize, tileSize);
+        img.className = 'img-loaded';
+      }
+      
+      
       img.style.width = tileWidth + 'px';
       img.style.height = tileHeight + 'px';
       img.style.position = 'absolute';
       img.style.top = tileTop + 'px';
       img.style.left = tileLeft + 'px';
-      img.id = 'tile-' + x + '-' + y;
+      //img.id = 'tile-' + x + '-' + y;
+      
+      
+      
       this.div_.appendChild(img);
-
-
-
     }
+  }
+  
+  // drag event listener
+  google.maps.event.addListener(this.map_, 'drag', function() {
     
+
+
+    $('#islandora-image-overlay .img-not-loaded').each(function() {
+    // still something mayorly wrong with this.
+      var offset = $(this).offset();
+      var imgWidth = $(this).width();
+      var imgHeight = $(this).height();
+      
+      // global variables are tile borders relative to
+      // global left px
+      var globalLeft = sw.x + offset.left;
+      // global top px
+      var globalTop = ne.y + offset.top;
+      // global right px
+      var globalRight = globalLeft + tileSize;
+      // global bottom px
+      var globalBottom = globalTop + tileSize;
+      
+      //console.log(imgHeight);
+      //console.log(offset.left);
+      if ((globalLeft > vpSW.x || globalRight > vpSW.x) && // don't include left
+          (globalLeft < vpNE.x || globalRight < vpNE.x) && // don't include right
+          (globalTop < vpSW.y || globalBottom < vpSW.y) && // don't include bottom
+          (globalTop > vpNE.y || globalBottom > vpNE.y) // don't include top
+         ) {
+        // get title
+        var imgTitle = $(this).attr('title');
+        // set img src
+        $(this).attr({src: imgTitle});
+        
+      }
+
+      
+    });
+  });
+
+  
+  
 }
 
-  
-  
-//  console.log(xAmount);
-//  console.log(xRemain);
-//  console.log(yAmount);
-//  console.log(yRemain);
-  
-//  console.log(Math.round(ne.x - sw.x));
-
-//  console.log(ne.x);
-//  console.log(sw.x);
-
-  
-}
 
 
 
+function djatokaRegion(image, scaleWidth, scaleHeight, top, left, height, width) {
 
-function djatokaRegion(scaleWidth, scaleHeight, top, left, height, width) {
   // set url
   var url;
-  // set original image
-//  var original = 'http://hpitt.pittsburgh/fedora/repository/hpitt%3Ahopkins_39v02p01_georefclip/JP2/39v02p01-011%20Clip1.jp2';
-//  var original = 'http://dl.dropbox.com/u/12905785/DGI/upitt/39v02p01-011_Clip1.tif';
-//  var original = 'http://dl.dropbox.com/u/12905785/DGI/upitt/39v02p01-011_Clip1.png';
-  var original = 'http://164.67.30.146/drupal/fedora/repository/ucla:4618/JP2/JP2';
-//  var original = 'http://upload.wikimedia.org/wikipedia/commons/d/dc/Cats_Petunia_and_Mimosa_2004.jpg';
 
   // get scaled down version of original image
-  var scaledOriginal = djatokaScale(original, scaleWidth);
-  
-//  console.log(scaledOriginal);
+  var scaledOriginal = djatokaScale(image, scaleWidth, scaleHeight);
   
   // encode scaled down image URL so we can re-use it
   var scaledOriginal = encodeURIComponent(scaledOriginal);
@@ -317,9 +330,6 @@ function djatokaRegion(scaleWidth, scaleHeight, top, left, height, width) {
     "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000"+
     "&svc.format=" + mimeType + 
     "&svc.region=" + top + "," + left + "," + height + "," + width;
-          
-//  console.log(url);
-//  console.log(scaledOriginal);
   
   return url;
 }
@@ -327,21 +337,28 @@ function djatokaRegion(scaleWidth, scaleHeight, top, left, height, width) {
 
 
 
-function djatokaScale(original, scaleWidth) {
+function djatokaScale(image, scaleWidth, scaleHeight) {
   // set scaledUrl variable
   var scaledUrl;
   
   // construct url for scale
   scaledUrl = djatokaBaseUrl +
-    "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id=" + original +
+    "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id=" + image +
     "&svc_id=info:lanl-repo/svc/getRegion" +
     "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000" +
     "&svc.format=" + mimeType +
-    "&svc.scale=" + scaleWidth;
+    "&svc.scale=" + scaleWidth + "," + scaleHeight;
   
   return scaledUrl;
   
 }
+
+
+
+
+
+
+
 
 
 
