@@ -8,11 +8,14 @@ Drupal.behaviors.mappingGmap = function(context) {
 }
 
 // set djatoka base url
-var djatokaBaseUrl = "http://164.67.30.146:8080";  // ucla
+//var djatokaBaseUrl = "http://164.67.30.146:8080";  // ucla
 //var djatokaBaseUrl = "http://192.168.3.12:8080";  // upitt
+//var djatokaBaseUrl = "http://192.168.56.195:8080";  // islandora VM sandbox
+var djatokaBaseUrl = "http://137.149.200.60:8080";  // sandbox.islandora.ca
 
 // set djatoka default mime-type
-var mimeType = "image/png";
+//var mimeType = "image/png";
+var mimeType = "image/jpeg";
 
 
 // initialize google map
@@ -54,17 +57,19 @@ function initialize_map() {
 //  var srcImage = 'http://upload.wikimedia.org/wikipedia/commons/d/dc/Cats_Petunia_and_Mimosa_2004.jpg';
 //  var srcImage = 'http://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg';
 //  var srcImage = 'http://a0.twimg.com/profile_images/111669684/druplicon.large_normal.png';
-//  var srcImage = 'http://d6theming.local/sites/all/modules/custom/mapping/images/upitt-map2500.png';
-  var srcImage = 'http://164.67.30.146/drupal/fedora/repository/ucla:4618/JP2/JP2';
-  overlay = new myOverlay(imageBounds, srcImage, map);
+//  var srcImage = 'http://164.67.30.146/drupal/fedora/repository/ucla:4618/JP2/JP2';
+//  var srcImage = 'http://lorempixel.com/output/sports-q-c-1920-1920-6.jpg';
+//  var srcImage = 'http://192.168.56.195/fedora/repository/image:4/JP2/bugtray-georgetown.tiff JP2.jp2';
+//  var srcImage = 'http://sandbox.islandora.ca/fedora/repository/islandora%3A28/JPG/bugtray-georgetown.tiff-med.jpg';
+//  var srcImage = 'http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2';
+//  var srcImage = 'http://hpitt.pittsburgh/fedora/repository/hpitt%3A943.000042.GN/JP2/000042gn.jp2'; 
+  var srcImage = 'http://sandbox.islandora.ca/fedora/repository/islandora%3A68/OBJ/upitt-map.png'; 
   
+  overlay = new myOverlay(imageBounds, srcImage, map);
+   
   // fit the bounds we created
   map.fitBounds(imageBounds);
   
-  
-  
-
-
 }
 
 
@@ -234,30 +239,38 @@ myOverlay.prototype.draw = function() {
       // global bottom px
       var globalBottom = globalTop + tileSize;
      
+      console.log(imgHeight);
       
       // create new image and assign style and attributes.
       var img = document.createElement("img");
       // get djatoka url
-      img.title = djatokaRegion(image, imgWidth, 0, tileTop, tileLeft, tileSize, tileSize);
-      
-      img.className = 'img-not-loaded';
-      img.style.background = 'green';
+      var djatokaImg = djatokaRegion(image, imgWidth, imgHeight, tileTop, tileLeft, tileSize, tileSize);
+//      alert(globalLeft);
+//      alert(globalTop);
+      //img.style.background = 'green';
       if ((globalLeft > vpSW.x || globalRight > vpSW.x) && // don't include left
           (globalLeft < vpNE.x || globalRight < vpNE.x) && // don't include right
           (globalTop < vpSW.y || globalBottom < vpSW.y) && // don't include bottom
           (globalTop > vpNE.y || globalBottom > vpNE.y) // don't include top
          ) {
         //img.style.background = 'blue';
-        img.src = djatokaRegion(image, imgWidth, 0, tileTop, tileLeft, tileSize, tileSize);
+        img.src = djatokaImg;
         img.className = 'img-loaded';
       }
+      else {
+        img.title = djatokaImg;
+        img.className = 'img-not-loaded';
+      }
       
-      
+      //img.alt = tileTop + '-' + tileLeft;
+      //img.alt = globalTop + '-' + globalLeft;
+//      img.style.border = '1px solid green';
       img.style.width = tileWidth + 'px';
       img.style.height = tileHeight + 'px';
       img.style.position = 'absolute';
       img.style.top = tileTop + 'px';
       img.style.left = tileLeft + 'px';
+      img.style.opacity = '0.75';
       //img.id = 'tile-' + x + '-' + y;
       
       
@@ -266,41 +279,56 @@ myOverlay.prototype.draw = function() {
     }
   }
   
+  // set bounds variable to pass into addListener function below
+  var bounds = this.bounds_;
+//  var 
+  
   // drag event listener
-  google.maps.event.addListener(this.map_, 'drag', function() {
+  google.maps.event.addListener(this.map_, 'drag', function(event) {
     
+  // on drag: set bounds coordinates in pixels again.
+  var sw = overlayProjection.fromLatLngToDivPixel(bounds.getSouthWest());
+  var ne = overlayProjection.fromLatLngToDivPixel(bounds.getNorthEast());
 
+  // on drag: set viewPortBounds again
+  var viewPortBounds = this.getBounds(); 
+  var vpNE = overlayProjection.fromLatLngToDivPixel(viewPortBounds.getNorthEast());
+  var vpSW = overlayProjection.fromLatLngToDivPixel(viewPortBounds.getSouthWest());
 
-    $('#islandora-image-overlay .img-not-loaded').each(function() {
-    // still something mayorly wrong with this.
-      var offset = $(this).offset();
+    $('.img-not-loaded').each(function() {
+      // get offset    
+      var offsetLeft = $(this).css('left');
+      var offsetTop = $(this).css('top');
+ 
+      // get image dimensions
       var imgWidth = $(this).width();
       var imgHeight = $(this).height();
       
       // global variables are tile borders relative to
       // global left px
-      var globalLeft = sw.x + offset.left;
+      var globalLeft = sw.x + parseInt(offsetLeft, 10);
       // global top px
-      var globalTop = ne.y + offset.top;
+      var globalTop = ne.y + parseInt(offsetTop, 10);
       // global right px
       var globalRight = globalLeft + tileSize;
       // global bottom px
       var globalBottom = globalTop + tileSize;
-      
-      //console.log(imgHeight);
-      //console.log(offset.left);
-      if ((globalLeft > vpSW.x || globalRight > vpSW.x) && // don't include left
+
+      if (
+          (globalLeft > vpSW.x || globalRight > vpSW.x) && // don't include left
           (globalLeft < vpNE.x || globalRight < vpNE.x) && // don't include right
           (globalTop < vpSW.y || globalBottom < vpSW.y) && // don't include bottom
           (globalTop > vpNE.y || globalBottom > vpNE.y) // don't include top
          ) {
         // get title
         var imgTitle = $(this).attr('title');
+//        var imgTitle = djatokaRegion(image, imgWidth, imgHeight, parseInt(offsetTop, 10), parseInt(offsetLeft, 10), tileSize, tileSize);
         // set img src
-        $(this).attr({src: imgTitle});
+        $(this).attr('src', imgTitle).removeClass('img-not-loaded').addClass('img-loaded').removeAttr('title');
+        
+        console.log('loaded');
         
       }
-
       
     });
   });
@@ -316,6 +344,7 @@ function djatokaRegion(image, scaleWidth, scaleHeight, top, left, height, width)
 
   // set url
   var url;
+//  var image = encodeURIComponent(image);
 
   // get scaled down version of original image
   var scaledOriginal = djatokaScale(image, scaleWidth, scaleHeight);
@@ -348,61 +377,8 @@ function djatokaScale(image, scaleWidth, scaleHeight) {
     "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000" +
     "&svc.format=" + mimeType +
     "&svc.scale=" + scaleWidth + "," + scaleHeight;
+
   
   return scaledUrl;
   
 }
-
-
-
-
-
-
-
-
-
-
-
-//iiv.Viewer.ImageLayer = OpenLayers.Class(OpenLayers.Layer.OpenURL, {
-//  djatokaUrl: null,
-//  uid: null,
-//
-//  /**
-//* this implementation is the same as the superclass, except that we use a
-//* fedora service as the url base, not djatoka itself
-//*/
-//  getURL: function(bounds) {
-//    bounds = this.adjustBounds(bounds);
-//    this.calculatePositionAndSize(bounds);
-//    var z = this.map.getZoom() + this.zoomOffset;
-//    
-//    // uid and djatokaUrl set in createImageLayer
-//    var path = this.djatokaUrl + '/getRegion?uid=' + this.uid + '&level=' + z
-//      + '&region=' + this.tilePos.lat + "," + this.tilePos.lon + "," + this.imageSize.h + "," + this.imageSize.w;
-//    
-//    var url = this.url;
-//    if (url instanceof Array) {
-//        url = this.selectUrl(path, url);
-//    }
-//    return url + path;
-//  }
-//});
-
-
-
-
-
-
-
-  // Create the DIV and set some basic attributes.
-//  var divInner = document.createElement('div');
-//  divInner.style.border = "none";
-//  divInner.style.borderWidth = "0px";
-//  divInner.style.border = "2px solid green";
-//  divInner.style.position = "absolute";
-//  divInner.style.top = "256px";
-//  divInner.style.left = "256px";
-//  divInner.style.width = '256px';
-//  divInner.style.height = '256px';
-//  divInner.id = 'islandora-image-overlay-inner';
-//  div.appendChild(divInner);
