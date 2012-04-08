@@ -40,6 +40,7 @@ function initialize_map() {
   // lonlat Pittsburgh: 40.4405556,-79.9961111
   // set latlng 
   var latlng = new google.maps.LatLng(40.4405556,-79.9961111);
+  var latlng = new google.maps.LatLng(40.4405556,-79.9961111);
   // set options
   var opts = {
     zoom: 13,
@@ -61,9 +62,12 @@ function initialize_map() {
 //  var srcImage = 'http://lorempixel.com/output/sports-q-c-1920-1920-6.jpg';
 //  var srcImage = 'http://192.168.56.195/fedora/repository/image:4/JP2/bugtray-georgetown.tiff JP2.jp2';
 //  var srcImage = 'http://sandbox.islandora.ca/fedora/repository/islandora%3A28/JPG/bugtray-georgetown.tiff-med.jpg';
-//  var srcImage = 'http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2';
+  var srcImage = 'http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2';
 //  var srcImage = 'http://hpitt.pittsburgh/fedora/repository/hpitt%3A943.000042.GN/JP2/000042gn.jp2'; 
-  var srcImage = 'http://sandbox.islandora.ca/fedora/repository/islandora%3A68/OBJ/upitt-map.png'; 
+//  var srcImage = 'http://sandbox.islandora.ca/fedora/repository/islandora%3A80/OBJ/upitt-map.png'; 
+//  var srcImage = 'http://sandbox.islandora.ca/fedora/repository/islandora%3A105/OBJ/map.JPG'; 
+//  var srcImage = 'http://sandbox.islandora.ca/fedora/repository/islandora:109/OBJ/FULL_SIZE.jpg'; 
+//  var srcImage = 'http://sandbox.islandora.ca/fedora/repository/islandora%3A28/FULL_SIZE/bugtray-georgetown.tiff'; 
   
   overlay = new myOverlay(imageBounds, srcImage, map);
    
@@ -239,7 +243,7 @@ myOverlay.prototype.draw = function() {
       // global bottom px
       var globalBottom = globalTop + tileSize;
      
-      console.log(imgHeight);
+      //console.log(imgHeight);
       
       // create new image and assign style and attributes.
       var img = document.createElement("img");
@@ -326,7 +330,7 @@ myOverlay.prototype.draw = function() {
         // set img src
         $(this).attr('src', imgTitle).removeClass('img-not-loaded').addClass('img-loaded').removeAttr('title');
         
-        console.log('loaded');
+        //console.log('loaded');
         
       }
       
@@ -377,7 +381,7 @@ function djatokaScale(image, scaleWidth, scaleHeight) {
     "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000" +
     "&svc.format=" + mimeType +
     "&svc.scale=" + scaleWidth + "," + scaleHeight;
-
+//  console.log(scaledUrl);
   
   return scaledUrl;
   
